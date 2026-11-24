@@ -48,6 +48,7 @@ if ($needBuild) {
 # 3. Windows Auto-Start in Background Tray (-tray)
 Write-Host '  [2/3] Προσθήκη στην αυτόματη εκκίνηση Windows (System Tray · 0% idle CPU)...' -ForegroundColor Yellow
 $runKey = 'HKCU:\Software\Microsoft\Windows\CurrentVersion\Run'
+if (-not (Test-Path -LiteralPath $runKey)) { New-Item -Path $runKey -Force | Out-Null }
 New-ItemProperty -Path $runKey -Name 'NillyClipPro' -Value "`"$exePath`" -tray" -PropertyType String -Force | Out-Null
 Write-Host '        OK -> Αυτόματη εκκίνηση έτοιμη!' -ForegroundColor Green
 
