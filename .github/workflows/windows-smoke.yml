@@ -1,0 +1,65 @@
+name: Verify Windows release
+on:
+  push:
+    paths:
+      - '.github/workflows/windows-smoke.yml'
+      - 'desktop/**'
+      - 'Install_NillyClipPro.ps1'
+  workflow_dispatch:
+permissions:
+  contents: read
+jobs:
+  smoke:
+    runs-on: windows-2025
+    timeout-minutes: 6
+    steps:
+      - uses: actions/checkout@v4
+      - name: Verify the installer, DPAPI and clipboard
+        shell: powershell
+        run: |
+          $ErrorActionPreference = 'Stop'
+          & .\Install_NillyClipPro.ps1 -Silent
+          $exe = (Resolve-Path .\NillyClipPro.exe).Path
+          $qa = Join-Path $env:RUNNER_TEMP 'nilly-clip-qa'
+          New-Item -ItemType Directory -Path $qa -Force | Out-Null
+          $log = Join-Path $qa 'smoke.txt'
+          $process = Start-Process -FilePath $exe -ArgumentList ('--test-smoke "' + $log + '"') -PassThru -Wait
+          $result = Get-Content -LiteralPath $log
+          $result | Write-Host
+          foreach ($line in @('SMOKE_RESULT=PASS','DPAPI_ZERO_PLAINTEXT_ON_DISK=True','DPAPI_DECRYPT_OK=True','SECRET_MASK_OK=True','WINDOW_OPENED_OK=True')) {
+            if ($process.ExitCode -ne 0 -or $result -notcontains $line) { throw "Missing smoke result: $line" }
+          }
+
+          Add-Type -AssemblyName System.Windows.Forms
+          $assembly = [Reflection.Assembly]::LoadFrom($exe)
+          $formType = $assembly.GetType('NillyClipPro.ClipPopupForm', $true)
+          $entryType = $assembly.GetType('NillyClipPro.ClipEntry', $true)
+          $form = [Activator]::CreateInstance($formType, [object[]]@($qa, $true))
+          $entry = [Activator]::CreateInstance($entryType, $true)
+          $sample = 'Nilly clipboard test ' + [Guid]::NewGuid().ToString('N')
+          $entryType.GetField('TextValue').SetValue($entry, $sample)
+          $copy = $formType.GetMethod('CopyVaultEntry', 'Instance,NonPublic')
+          $timer = $formType.GetField('_vaultClearTimer','Instance,NonPublic').GetValue($form)
+          try {
+            $form.Show()
+            $copy.Invoke($form, @($entry))
+            if ([Windows.Forms.Clipboard]::GetText() -ne $sample) { throw 'The sample was not copied' }
+            if (-not [Windows.Forms.Clipboard]::ContainsData('ExcludeClipboardContentFromMonitorProcessing')) { throw 'Clipboard history exclusion is missing' }
+            if (-not $timer.Enabled -or $timer.Interval -ne 30000) { throw 'Auto-clear timer is not set to 30 seconds' }
+            $end = [DateTime]::UtcNow.AddSeconds(38)
+            while ([Windows.Forms.Clipboard]::ContainsText() -and [DateTime]::UtcNow -lt $end) {
+              [Windows.Forms.Application]::DoEvents()
+              Start-Sleep -Milliseconds 100
+            }
+            if ([Windows.Forms.Clipboard]::ContainsText()) { throw 'The sample remained on the clipboard' }
+            $copy.Invoke($form, @($entry))
+            [Windows.Forms.Clipboard]::SetText('new non-vault copy')
+            $formType.GetMethod('ClearVaultClipboard', 'Instance,NonPublic').Invoke($form, @())
+            if ([Windows.Forms.Clipboard]::GetText() -ne 'new non-vault copy') { throw 'Auto-clear removed a new clipboard entry' }
+            Write-Host 'CLIPBOARD_EXCLUSION=True'
+            Write-Host 'CLIPBOARD_AUTO_CLEAR=True'
+            Write-Host 'CLIPBOARD_NEW_ENTRY_PRESERVED=True'
+          } finally {
+            $form.Dispose()
+            [Windows.Forms.Clipboard]::Clear()
+          }
