@@ -38,8 +38,8 @@ jobs:
           $entry = [Activator]::CreateInstance($entryType, $true)
           $sample = 'Nilly clipboard test ' + [Guid]::NewGuid().ToString('N')
           $entryType.GetField('TextValue').SetValue($entry, $sample)
-          $copy = $formType.GetMethod('CopyVaultEntry', 'Instance,NonPublic')
-          $timer = $formType.GetField('_vaultClearTimer','Instance,NonPublic').GetValue($form)
+          $copy = $formType.GetMethod('CopyVaultEntry', ([Reflection.BindingFlags]::Instance -bor [Reflection.BindingFlags]::NonPublic))
+          $timer = $formType.GetField('_vaultClearTimer',([Reflection.BindingFlags]::Instance -bor [Reflection.BindingFlags]::NonPublic)).GetValue($form)
           try {
             $form.Show()
             $copy.Invoke($form, @($entry))
@@ -54,7 +54,7 @@ jobs:
             if ([Windows.Forms.Clipboard]::ContainsText()) { throw 'The sample remained on the clipboard' }
             $copy.Invoke($form, @($entry))
             [Windows.Forms.Clipboard]::SetText('new non-vault copy')
-            $formType.GetMethod('ClearVaultClipboard', 'Instance,NonPublic').Invoke($form, @())
+            $formType.GetMethod('ClearVaultClipboard', ([Reflection.BindingFlags]::Instance -bor [Reflection.BindingFlags]::NonPublic)).Invoke($form, @())
             if ([Windows.Forms.Clipboard]::GetText() -ne 'new non-vault copy') { throw 'Auto-clear removed a new clipboard entry' }
             Write-Host 'CLIPBOARD_EXCLUSION=True'
             Write-Host 'CLIPBOARD_AUTO_CLEAR=True'
