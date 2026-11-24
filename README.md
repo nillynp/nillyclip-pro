@@ -1,7 +1,6 @@
 # NillyClip Pro — Ultra-Light Clipboard History, Pinned Snippets & DPAPI-Encrypted API Key Vault
 
-> Windows QA candidate. A public release will follow after Windows 10/11 validation.
-> Δοκιμαστική έκδοση. Εκκρεμεί επαλήθευση σε Windows 10/11 πριν από τη δημόσια λήψη.
+**[Δημόσια έκδοση v1.0 · Public release](https://github.com/nillynp/nillyclip-pro/releases/tag/v1.0)**
 
 > **Πανάλαφρος (`~62 KB`!), 100% Native Διαχειριστής Προχείρου (Clipboard History), Καρφιτσωμένα Snippets & Κρυπτογραφημένη Κλειδοθήκη API Keys με Windows DPAPI για Windows 10/11!**
 > **Αντικαθιστά το βαρύ Windows Clipboard History (`TextInputHost ~178 MB RAM` + Microsoft Cloud sync) με `0%` idle CPU, τοπική αποθήκευση και vector ματάκι (👁) απόκρυψης/προβολής μυστικών!**
