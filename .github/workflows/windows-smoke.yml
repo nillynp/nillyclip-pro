@@ -34,7 +34,7 @@ jobs:
           $assembly = [Reflection.Assembly]::LoadFrom($exe)
           $formType = $assembly.GetType('NillyClipPro.ClipPopupForm', $true)
           $entryType = $assembly.GetType('NillyClipPro.ClipEntry', $true)
-          $form = [Activator]::CreateInstance($formType, [object[]]@($qa, $true))
+          $form = $formType.GetConstructor([type[]]@([string], [bool])).Invoke([object[]]@([string]$qa, [bool]$true))
           $entry = [Activator]::CreateInstance($entryType, $true)
           $sample = 'Nilly clipboard test ' + [Guid]::NewGuid().ToString('N')
           $entryType.GetField('TextValue').SetValue($entry, $sample)
