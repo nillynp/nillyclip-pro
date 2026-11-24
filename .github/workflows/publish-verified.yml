@@ -1,0 +1,51 @@
+name: Publish NillyClip Pro v1.0
+on:
+  push:
+    branches: ['release/publish-v1-0']
+    paths: ['.github/workflows/publish-verified.yml']
+permissions:
+  contents: read
+jobs:
+  publish:
+    runs-on: ubuntu-latest
+    timeout-minutes: 5
+    permissions:
+      contents: write
+      actions: read
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          ref: 5136180e26bc51ebe5803b2f77db7bbbaa7c3a1f
+      - name: Package and publish verified portable release
+        env:
+          GH_TOKEN: ${{ github.token }}
+          RELEASE_TAG: 'v1.0'
+          RELEASE_ZIP: 'NillyClip-Pro-v1.0-Portable.zip'
+          RELEASE_NAME: 'NillyClip Pro v1.0'
+          SOURCE_SHA: '5136180e26bc51ebe5803b2f77db7bbbaa7c3a1f'
+        run: |
+          set -euo pipefail
+          gh api "repos/$GITHUB_REPOSITORY/actions/runs/45448443791" | jq -e --arg sha "$SOURCE_SHA" '.head_sha == $sha and .conclusion == "success"' > /dev/null
+          mkdir -p "$RUNNER_TEMP/nilly-release"
+          out="$RUNNER_TEMP/nilly-release"
+          git archive --format=zip --output="$out/$RELEASE_ZIP" "$SOURCE_SHA" -- LICENSE README.md '*.ico' '*.bat' '*.ps1' desktop
+          unzip -tq "$out/$RELEASE_ZIP"
+          (cd "$out" && sha256sum "$RELEASE_ZIP" > SHA256SUMS.txt)
+          cat "$out/SHA256SUMS.txt"
+          cat > "$out/notes.md" <<'NOTES'
+          ### Ελληνικά
+          Δωρεάν φορητός διαχειριστής προχείρου με καρφιτσωμένα αποσπάσματα, δείγματα HEX και τοπική κλειδοθήκη DPAPI. Σε νέο προφίλ η εγκατάσταση δημιουργεί την εγγραφή εκκίνησης. Η έκδοση ελέγχθηκε σε Windows με συνθετικές τιμές για κρυπτογράφηση, εξαίρεση του αντιγράφου από το ιστορικό και αυτόματη εκκαθάριση στα 30 δευτερόλεπτα.
+          Αποσυμπίεσε το Portable ZIP και άνοιξε το `Install_NillyClipPro.bat`. Η άδεια είναι MIT.
+          
+          ### English
+          Free portable clipboard manager with pinned snippets, HEX swatches and a local DPAPI vault. Windows checks used synthetic values to verify encryption at rest, the clipboard exclusion marker, 30-second auto-clear and preservation of a newer clipboard entry.
+          Extract the portable ZIP and run `Install_NillyClipPro.bat`. MIT licensed.
+          NOTES
+          if gh release view "$RELEASE_TAG" --json isDraft --jq .isDraft > "$out/status"; then
+            test "$(cat "$out/status")" = true
+          else
+            exit 1
+          fi
+          gh release upload "$RELEASE_TAG" "$out/$RELEASE_ZIP" "$out/SHA256SUMS.txt" --clobber
+          gh release edit "$RELEASE_TAG" --target "$SOURCE_SHA" --draft=false --latest --title "$RELEASE_NAME" --notes-file "$out/notes.md"
+          gh release view "$RELEASE_TAG" --json isDraft,url,assets
