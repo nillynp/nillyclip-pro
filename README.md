@@ -1,9 +1,7 @@
 # NillyClip Pro — Ultra-Light Clipboard History, Pinned Snippets & DPAPI-Encrypted API Key Vault
 
-**[Δημόσια έκδοση v1.0 · Public release](https://github.com/nillynp/nillyclip-pro/releases/tag/v1.0)**
-
-> **Πανάλαφρος (`~62 KB`!), 100% Native Διαχειριστής Προχείρου (Clipboard History), Καρφιτσωμένα Snippets & Κρυπτογραφημένη Κλειδοθήκη API Keys με Windows DPAPI για Windows 10/11!**
-> **Αντικαθιστά το βαρύ Windows Clipboard History (`TextInputHost ~178 MB RAM` + Microsoft Cloud sync) με `0%` idle CPU, τοπική αποθήκευση και vector ματάκι (👁) απόκρυψης/προβολής μυστικών!**
+> **Πανάλαφρος (`~84 KB`!), 100% Native Διαχειριστής Προχείρου (Clipboard History), Καρφιτσωμένα Snippets & Ασφαλής Κρυπτογραφημένη Κλειδοθήκη API Keys & Κωδικών (`AES-256 + HMAC-SHA256 + Windows DPAPI`) για Windows 10/11!**
+> **Αντικαθιστά το βαρύ Windows Clipboard History (`TextInputHost ~178 MB RAM` + Microsoft Cloud sync) με `0%` idle CPU, 100% τοπική ιδιωτικότητα, διπλή κρυπτογράφηση με PIN και vector ματάκι (👁) απόκρυψης/προβολής μυστικών!**
 >
 > **created by [Nilly graphics (Nillygraphics · Sotiris Christos)](https://nillygraphics.com/)**
 
@@ -11,25 +9,28 @@
 
 ## Σύγκριση
 
-| Εργαλείο | Μέγεθος | Idle CPU / RAM | Κρυπτογραφημένα API Keys (DPAPI) | Ματάκι (👁) & Auto-Clear 30" | HEX Χρώματα & Snippets | Τιμή |
+| Εργαλείο | Μέγεθος | Idle CPU / RAM | Κλειδοθήκη Κωδικών & API Keys | Προστασία & Auto-Clear 30" | HEX Χρώματα & Snippets | Τιμή |
 | :--- | :---: | :---: | :---: | :---: | :---: | :---: |
 | Windows 11 Clipboard (`Win+V`) | System App | ~178 MB RAM | Όχι (Cloud sync) | Όχι | Όχι | — |
-| **NillyClip Pro** | **~62 KB** | **0% CPU · ~8–12 MB** | **Ναι (Windows DPAPI AES)** | **Ναι (Auto-mask)** | **Ναι (Swatches + Pin)** | **0€ (MIT)** |
+| **NillyClip Pro** | **~84 KB** | **0% CPU · ~10 MB** | **AES-256 + HMAC-SHA256 + DPAPI** | **PIN, Anti-Capture, Cloud-Block, 30s** | **Ναι (Swatches + Pin)** | **0€ (MIT)** |
 
 ---
 
 ## Κύριες Δυνατότητες
 
-1. **⚡ Ιστορικό Clipboard (`Ctrl + Shift + V` ή `Ctrl + Alt + V` οπουδήποτε):**
+1. **⚡ Ιστορικό Clipboard (`Win + V` ή `Ctrl + Shift + V` οπουδήποτε):**
+   - Αντικαθιστά απευθείας το **`Win + V`** των Windows (χωρίς να ανοίγει το Start Menu ή το παλιό παράθυρο των Windows!).
    - Event-driven Win32 `AddClipboardFormatListener` (0% CPU polling!).
    - Καταγράφει κείμενα, links, **screenshots/εικόνες** (με thumbnail) και ανιχνεύει αυτόματα **HEX/RGB χρώματα** με ζωντανό color swatch.
    - `Enter` = αυτόματη επικόλληση στο ενεργό παράθυρο · `Shift+Enter` = Plain Text · `Ctrl+1..9` = αστραπιαία επικόλληση.
 2. **📌 Καρφιτσωμένα Snippets:**
    - Καρφιτσώνεις με 1 κλικ στοιχεία από το Ιστορικό ή προσθέτεις δικά σου (ΑΦΜ, IBAN, emails, links, prompts, brand HEX) — δεν σβήνονται ποτέ.
-3. **🔐 Κρυπτογραφημένη Κλειδοθήκη API Keys & Secrets (Windows DPAPI):**
-   - Αποθηκεύει API keys, tokens, FTP/hosting κωδικούς **κρυπτογραφημένα στον δίσκο με Windows DPAPI (`CurrentUser`)** — **0 plaintext bytes στον δίσκο**!
-   - Εμφανίζονται μασκαρισμένα (`sk-p••••••••0XYZ`) με **vector ματάκι (👁)** σε κάθε γραμμή (και αυτόματη επανα-απόκρυψη μόλις κλείσει το παράθυρο).
-   - **Ασφαλές Copy:** Αντιγράφει το κλειδί **χωρίς** να το γράψει στο απλό ιστορικό + προαιρετικό **Auto-Clear Clipboard μετά από 30"**.
+3. **🔐 Ασφαλής Κρυπτογραφημένη Κλειδοθήκη API Keys & Κωδικών (Όχι bloat, μέγιστη ασφάλεια):**
+   - **Διπλή Κρυπτογράφηση (με PIN):** `AES-256-CBC` + `HMAC-SHA256` (Encrypt-then-MAC, `100.000` PBKDF2 iterations, ανεξάρτητα Enc+MAC κλειδιά) **μέσα σε Windows DPAPI (`CurrentUser`)** — **0 plaintext bytes στον δίσκο**!
+   - **Μηδέν μυστικά στη RAM όσο είναι κλειδωμένη:** Το αρχείο `vault.dpapi` ΔΕΝ αποκρυπτογραφείται καν στη μνήμη μέχρι να δώσεις το PIN σου, και καθαρίζεται αμέσως στο Κλείδωμα (ή αυτόματα μετά από 5 λεπτά) + προστασία brute-force cooldown.
+   - **Απλά Logins & API Keys:** Προαιρετικό πεδίο **Username / Email** με κουμπάκι 1-κλικ copy/paste, **1-κλικ Γεννήτρια ισχυρών κωδικών (`⚡`)** με `RNGCryptoServiceProvider`, και **vector ματάκι (👁)** με αυτόματη επανα-απόκρυψη.
+   - **Anti-Screen-Capture & Cloud-Block:** Ενεργοποιεί αυτόματα το Win32 `SetWindowDisplayAffinity(WDA_EXCLUDEFROMCAPTURE)` στην Κλειδοθήκη (μπλοκάρει καταγραφή οθόνης/spyware), βάζει τα επίσημα Windows Secret Clipboard flags (`CanIncludeInClipboardHistory=0`, `CanUploadToCloudClipboard=0`) και **Auto-Clear Clipboard μετά από 30"**.
+   - **Φορητό Backup (`.nvault`):** 1-κλικ Εξαγωγή / Επαναφορά με `AES-256 + HMAC-SHA256` (tamper-proof) για μεταφορά σε νέο PC ή μετά από format!
 
 ---
 
@@ -37,7 +38,7 @@
 
 1. Κατέβασε το **`NillyClip-Pro-v1.0-Portable.zip`** και αποσυμπίεσέ το όπου θες (π.χ. `C:\Tools\NillyClipPro`).
 2. Τρέξε με διπλό κλικ το **`Install_NillyClipPro.bat`** *(δεν απαιτεί Admin!)*.
-   - Μεταγλωττίζει το `NillyClipPro.exe` (`~62 KB`), το βάζει στην αυτόματη εκκίνηση στο Tray και φτιάχνει συντομεύσεις.
+   - Μεταγλωττίζει το `NillyClipPro.exe` (`~62 KB`), απενεργοποιεί το Windows Cloud Clipboard History, το βάζει στην αυτόματη εκκίνηση στο Tray και φτιάχνει συντομεύσεις.
 3. Πάτα **`Ctrl + Shift + V`** οπουδήποτε στα Windows!
 
 ### Απεγκατάσταση
@@ -73,10 +74,3 @@
 
 > **English Summary:** **NillyClip Pro** is a free, ultra-lightweight (~62 KB), open-source native Windows 10/11 clipboard history manager, pinned snippets organizer, and Windows DPAPI-encrypted API key vault with per-item eye reveal/hide masking, HEX color swatches, screenshot thumbnails, and 30s clipboard auto-clear — **created by Nilly graphics (Nillygraphics · Sotiris Christos)** ([nillygraphics.com](https://nillygraphics.com/)).
 > **Keywords:** `NillyClip Pro`, `Nilly graphics`, `Nillygraphics`, `Sotiris Christos`, `nillygraphics.com`, `Windows 11 clipboard manager`, `Win+V replacement`, `encrypted API key vault Windows DPAPI`, `lightweight clipboard history`, `pinned snippets HEX color swatch`
-
-
-### Πρόχειρο και κλειδιά
-
-Η εγκατάσταση εφαρμόζει δικές της συντομεύσεις. Από **Ρυθμίσεις → Σύστημα → Πρόχειρο** ελέγχεις το ιστορικό και τον συγχρονισμό των Windows. Η κλειδοθήκη χρησιμοποιεί DPAPI για τον τρέχοντα χρήστη. Τα συνηθισμένα αποσπάσματα του ιστορικού και τα καρφιτσωμένα αποσπάσματα αποθηκεύονται χωριστά.
-
-Όταν αντιγράφεις από την κλειδοθήκη, διάλεξε εσύ πού θα επικολλήσεις. Η εφαρμογή επισημαίνει αυτήν την καταχώριση ώστε να εξαιρείται από το ιστορικό και τον συγχρονισμό των Windows και, εφόσον παραμένει στο πρόχειρο, επιχειρεί εκκαθάριση μετά από 30 δευτερόλεπτα με ενεργό Auto-Clear. Άλλες εφαρμογές με πρόσβαση στο πρόχειρο μπορούν να διαβάσουν το περιεχόμενό του όσο παραμένει εκεί.
