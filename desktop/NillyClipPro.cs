@@ -35,8 +35,8 @@ using Microsoft.Win32;
 [assembly: AssemblyProduct("NillyClip Pro")]
 [assembly: AssemblyCopyright("Copyright (c) 2026 Nilly graphics (Sotiris Christos) — https://nillygraphics.com/")]
 [assembly: AssemblyTrademark("Nilly graphics / Nillygraphics — Sotiris Christos")]
-[assembly: AssemblyVersion("1.1.1.0")]
-[assembly: AssemblyFileVersion("1.1.1.0")]
+[assembly: AssemblyVersion("1.2.0.0")]
+[assembly: AssemblyFileVersion("1.2.0.0")]
 
 namespace NillyClipPro
 {
@@ -938,6 +938,7 @@ namespace NillyClipPro
         public event Action<ClipEntry> MoveToVaultRequested;
         public event Action<ClipEntry> EditRequested;
         public event Action<ClipEntry> DeleteRequested;
+        public event Action<ClipEntry, Point> ContextMenuRequested;
 
         private bool _dark = true;
         private bool _hovered = false;
@@ -1236,6 +1237,11 @@ namespace NillyClipPro
 
         protected override void OnMouseClick(MouseEventArgs e)
         {
+            if (e.Button == MouseButtons.Right)
+            {
+                if (ContextMenuRequested != null) ContextMenuRequested(Entry, this.PointToScreen(e.Location));
+                return;
+            }
             if (e.Button != MouseButtons.Left) return;
             int hb = HitBtn(e.Location);
             if (hb == 3) { if (CopyUserRequested != null) CopyUserRequested(Entry); }
@@ -1351,6 +1357,7 @@ namespace NillyClipPro
         public ClipPopupForm(string customDir, bool smokeMode)
         {
             _smokeMode = smokeMode;
+            _dark = ReadSuiteDark(true);
             _store = new ClipStore(customDir);
             _store.LoadAll();
 
@@ -1695,6 +1702,122 @@ namespace NillyClipPro
             }
         }
 
+        private static bool ReadSuiteDark(bool fallback)
+        {
+            try
+            {
+                string p = Path.Combine(Environment.GetFolderPath(Environment.SpecialFolder.LocalApplicationData), @"NillySuite\suite.theme");
+                if (File.Exists(p))
+                {
+                    string s = File.ReadAllText(p, Encoding.ASCII).Trim();
+                    if (s.Equals("light", StringComparison.OrdinalIgnoreCase)) return false;
+                    if (s.Equals("dark", StringComparison.OrdinalIgnoreCase)) return true;
+                }
+            }
+            catch { }
+            return fallback;
+        }
+
+        private static string FindSiblingExe(string folder, string exeName)
+        {
+            try
+            {
+                string appData = Path.Combine(Environment.GetFolderPath(Environment.SpecialFolder.LocalApplicationData), @"NillySuite\" + folder + @"\" + exeName);
+                if (File.Exists(appData)) return appData;
+                DirectoryInfo par = Directory.GetParent(AppDomain.CurrentDomain.BaseDirectory.TrimEnd('\\'));
+                if (par != null)
+                {
+                    string sib = Path.Combine(Path.Combine(par.FullName, folder), exeName);
+                    if (File.Exists(sib)) return sib;
+                }
+            }
+            catch { }
+            return null;
+        }
+
+        private static string TryExtractHex(string text)
+        {
+            if (string.IsNullOrEmpty(text)) return null;
+            string s = text.Trim();
+            if (s.Length == 7 || s.Length == 4)
+            {
+                if (s[0] == '#')
+                {
+                    bool ok = true;
+                    for (int i = 1; i < s.Length; i++)
+                    {
+                        char c = s[i];
+                        if (!((c >= '0' && c <= '9') || (c >= 'a' && c <= 'f') || (c >= 'A' && c <= 'F'))) { ok = false; break; }
+                    }
+                    if (ok) return s;
+                }
+            }
+            return null;
+        }
+
+        private void OnCardContextMenu(ClipEntry entry, Point screenPt)
+        {
+            if (entry == null || _activeTab == 2) return; // Never dump Vault secrets to temp files
+            ContextMenuStrip cm = new ContextMenuStrip();
+            if (entry.Kind == ClipKind.Text && !string.IsNullOrEmpty(entry.TextValue))
+            {
+                string noteExe = FindSiblingExe("NillyNotePro", "NillyNotePro.exe");
+                if (noteExe != null)
+                {
+                    cm.Items.Add("↗ Άνοιγμα σε NillyNote Pro", null, delegate
+                    {
+                        try
+                        {
+                            string tmp = Path.Combine(Path.GetTempPath(), "NillyClip_" + DateTime.Now.ToString("yyyyMMdd_HHmmss") + ".txt");
+                            File.WriteAllText(tmp, entry.TextValue, new UTF8Encoding(false));
+                            Process.Start(new ProcessStartInfo(noteExe, "\"" + tmp + "\"") { WorkingDirectory = Path.GetDirectoryName(noteExe), UseShellExecute = true });
+                        }
+                        catch { }
+                    });
+                }
+                string codeExe = FindSiblingExe("NillyCodePro", "NillyCodePro.exe");
+                if (codeExe != null)
+                {
+                    cm.Items.Add("</> Επεξεργασία σε NillyCode Pro", null, delegate
+                    {
+                        try
+                        {
+                            string tmp = Path.Combine(Path.GetTempPath(), "NillyClip_" + DateTime.Now.ToString("yyyyMMdd_HHmmss") + ".txt");
+                            File.WriteAllText(tmp, entry.TextValue, new UTF8Encoding(false));
+                            Process.Start(new ProcessStartInfo(codeExe, "\"" + tmp + "\"") { WorkingDirectory = Path.GetDirectoryName(codeExe), UseShellExecute = true });
+                        }
+                        catch { }
+                    });
+                }
+                string hex = TryExtractHex(entry.TextValue);
+                if (hex != null)
+                {
+                    string calcExe = FindSiblingExe("NillyCalcPro", "NillyCalcPro.exe");
+                    if (calcExe != null)
+                    {
+                        cm.Items.Add("🎨 Ανάλυση Χρώματος (" + hex + ") σε NillyCalc Pro", null, delegate
+                        {
+                            try { Process.Start(new ProcessStartInfo(calcExe, "--hex \"" + hex + "\"") { WorkingDirectory = Path.GetDirectoryName(calcExe), UseShellExecute = true }); } catch { }
+                        });
+                    }
+                }
+            }
+            else if (entry.Kind == ClipKind.Image && !string.IsNullOrEmpty(entry.ImageFile))
+            {
+                string imgPath = Path.Combine(_store.ImgDir, entry.ImageFile);
+                string viewExe = FindSiblingExe("NillyViewPro", "NillyViewPro.exe");
+                if (viewExe != null && File.Exists(imgPath))
+                {
+                    cm.Items.Add("🖼 Προβολή / Επεξεργασία σε NillyView Pro", null, delegate
+                    {
+                        try { Process.Start(new ProcessStartInfo(viewExe, "\"" + imgPath + "\"") { WorkingDirectory = Path.GetDirectoryName(viewExe), UseShellExecute = true }); } catch { }
+                    });
+                }
+            }
+            if (cm.Items.Count > 0) cm.Show(screenPt);
+            else cm.Dispose();
+        }
+
         private List<ClipEntry> CurrentSourceList()
         {
             return _activeTab == 0 ? _store.History : (_activeTab == 1 ? _store.Pinned : _store.Vault);
@@ -1748,6 +1871,7 @@ namespace NillyClipPro
                 card.CopyUserRequested += OnCopyUsername;
                 card.PinRequested += OnPinFromHistory;
                 card.MoveToVaultRequested += OnSaveToVaultFromHistory;
+                card.ContextMenuRequested += OnCardContextMenu;
                 card.EditRequested += OnEditEntry;
                 card.DeleteRequested += OnDeleteEntry;
                 _rows.Add(card);
