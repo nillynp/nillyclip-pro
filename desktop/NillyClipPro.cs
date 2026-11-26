@@ -35,8 +35,8 @@ using Microsoft.Win32;
 [assembly: AssemblyProduct("NillyClip Pro")]
 [assembly: AssemblyCopyright("Copyright (c) 2026 Nilly graphics (Sotiris Christos) — https://nillygraphics.com/")]
 [assembly: AssemblyTrademark("Nilly graphics / Nillygraphics — Sotiris Christos")]
-[assembly: AssemblyVersion("1.2.0.0")]
-[assembly: AssemblyFileVersion("1.2.0.0")]
+[assembly: AssemblyVersion("1.2.1.0")]
+[assembly: AssemblyFileVersion("1.2.1.0")]
 
 namespace NillyClipPro
 {
@@ -1479,7 +1479,7 @@ namespace NillyClipPro
 
             FlowLayoutPanel rFlow = new FlowLayoutPanel { Dock = DockStyle.Right, Width = 216, FlowDirection = FlowDirection.RightToLeft, WrapContents = false };
             _btnHide = MkBtn("×", 28, delegate { HideAndMask(); });
-            _btnTheme = MkBtn("☀", 28, delegate { _dark = !_dark; ApplyTheme(); });
+            _btnTheme = MkBtn("◐", 28, delegate { _dark = !_dark; ApplyTheme(); });
             _btnPause = MkBtn("||", 28, delegate { TogglePause(); });
             _btnAdd = MkBtn("+ Νέο", 66, delegate { OpenAddEntryDialog(); });
             ToolTip tt = new ToolTip();
@@ -1667,7 +1667,7 @@ namespace NillyClipPro
             _txtSearch.ForeColor = fg;
             _lblStatus.ForeColor = muted;
             _lblBrand.ForeColor = orange;
-            _btnTheme.Text = _dark ? "☀" : "🌙";
+            _btnTheme.Text = "◐";
 
             foreach (Button b in new Button[] { _btnPause, _btnTheme, _btnHide })
             { b.BackColor = btnBg; b.ForeColor = fg; b.FlatAppearance.BorderColor = border; }
