@@ -35,8 +35,8 @@ using Microsoft.Win32;
 [assembly: AssemblyProduct("NillyClip Pro")]
 [assembly: AssemblyCopyright("Copyright (c) 2026 Nilly graphics (Sotiris Christos) — https://nillygraphics.com/")]
 [assembly: AssemblyTrademark("Nilly graphics / Nillygraphics — Sotiris Christos")]
-[assembly: AssemblyVersion("1.2.1.0")]
-[assembly: AssemblyFileVersion("1.2.1.0")]
+[assembly: AssemblyVersion("1.2.2.0")]
+[assembly: AssemblyFileVersion("1.2.2.0")]
 
 namespace NillyClipPro
 {
@@ -829,7 +829,7 @@ namespace NillyClipPro
                     _txtVal.UseSystemPasswordChar = _masked;
                     _btnEye.ForeColor = _masked ? orange : Color.FromArgb(166, 226, 46);
                 };
-                Button btnGen = new Button { Left = 390, Top = valTop + 19, Width = 34, Height = 25, FlatStyle = FlatStyle.Flat, BackColor = inp, ForeColor = Color.FromArgb(102, 217, 239), Text = "⚡", Font = new Font("Segoe UI", 9.5f), Cursor = Cursors.Hand, TabStop = false };
+                Button btnGen = new Button { Left = 390, Top = valTop + 19, Width = 34, Height = 25, FlatStyle = FlatStyle.Flat, BackColor = inp, ForeColor = Color.FromArgb(252, 150, 31), Text = "↻", Font = new Font("Segoe UI", 9.5f), Cursor = Cursors.Hand, TabStop = false };
                 btnGen.FlatAppearance.BorderColor = Color.FromArgb(60, 64, 76);
                 btnGen.Click += delegate
                 {
@@ -1795,7 +1795,7 @@ namespace NillyClipPro
                     string calcExe = FindSiblingExe("NillyCalcPro", "NillyCalcPro.exe");
                     if (calcExe != null)
                     {
-                        cm.Items.Add("🎨 Ανάλυση Χρώματος (" + hex + ") σε NillyCalc Pro", null, delegate
+                        cm.Items.Add("Ανάλυση Χρώματος (" + hex + ") σε NillyCalc Pro", null, delegate
                         {
                             try { Process.Start(new ProcessStartInfo(calcExe, "--hex \"" + hex + "\"") { WorkingDirectory = Path.GetDirectoryName(calcExe), UseShellExecute = true }); } catch { }
                         });
@@ -1808,7 +1808,7 @@ namespace NillyClipPro
                 string viewExe = FindSiblingExe("NillyViewPro", "NillyViewPro.exe");
                 if (viewExe != null && File.Exists(imgPath))
                 {
-                    cm.Items.Add("🖼 Προβολή / Επεξεργασία σε NillyView Pro", null, delegate
+                    cm.Items.Add("Προβολή / Επεξεργασία σε NillyView Pro", null, delegate
                     {
                         try { Process.Start(new ProcessStartInfo(viewExe, "\"" + imgPath + "\"") { WorkingDirectory = Path.GetDirectoryName(viewExe), UseShellExecute = true }); } catch { }
                     });
